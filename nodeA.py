@@ -8,6 +8,7 @@ import base64
 import requests
 import hashlib
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -25,6 +26,17 @@ private_key = None
 n = None
 master_public_key = None
 Mpk = None
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins. Replace "*" with specific domain(s) for production.
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods.
+    allow_headers=["*"],  # Allows all headers.
+)
+
+
 
 
 server = "http://127.0.0.1:8000"
@@ -150,6 +162,7 @@ def partial_key_generate():
             pska = ski
             ppka = pki
             partial_public_key = key
+            return {"hash matched"}
 
         else:
             return {"error": "Hash mismatch. Invalid partial key pair."}
