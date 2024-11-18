@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from cryptography.hazmat.primitives import serialization
 import random
 import hashlib
@@ -8,6 +8,12 @@ from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 import requests
 from typing import List
+from AES_Python import AES
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import struct
+import binascii
+
 from fastapi.middleware.cors import CORSMiddleware
 
 # app = FastAPI()
@@ -50,6 +56,10 @@ SSK1 = None
 SSK2 = None
 SSKAB = None
 
+#Message :
+Message = None
+
+
 server = "http://127.0.0.1:8000"
 nodeA = "http://127.0.0.1:8001"
 nodeB = "http://127.0.0.1:8002"
@@ -72,6 +82,12 @@ class CurvePoints(BaseModel):
     Pkb : list[int]
     PPkb : list[int]
     nodeid: int
+
+class MessageRequest(BaseModel):
+    message: str  
+
+class EncryptedMessageRequest(BaseModel):
+    encrypted_message: str  
 
 
 
@@ -143,7 +159,7 @@ def partial_key_generate():
         print("hi:", hi)
 
         if(hi == None):
-            return {"error": "ID already exists."}
+            return{"error": "ID already exists cannot register ID"}
 
         recalculated_hi = hashlib.sha256(f"{node_id}{pka}{pki}".encode()).hexdigest()
 
@@ -304,3 +320,74 @@ def AuthSessionKey():
     else:
         print("Sessin Key Incorrect")
         return {"result": "Session Not Established"}
+    
+
+@app.post("/Encryption")
+def encryption(request: MessageRequest):
+    global SSKAB, Message
+
+    key = binascii.unhexlify(SSKAB)
+
+    if len(key) not in [16, 24, 32]:
+        raise ValueError("Session key must be 16, 24, or 32 bytes long.")
+
+    data = request.message
+    data_bytes = data.encode('utf-8')
+
+    cipher = AES.new(key, AES.MODE_ECB)
+
+    ciphertext = cipher.encrypt(pad(data_bytes, AES.block_size))
+
+    encrypted_hex = binascii.hexlify(ciphertext).decode('utf-8')
+    print(f"Original data: {data}")
+    print(f"Encrypted data (hex): {encrypted_hex}")
+
+    response = requests.post(f"{nodeB}/Decryption", json={
+        "encrypted_message":encrypted_hex
+    })
+
+    return {"result": "Message Delievered"}
+
+@app.post("/Decryption")
+def decryption(request: EncryptedMessageRequest):
+    global SSKAB
+    global Message
+
+    key = binascii.unhexlify(SSKAB)
+
+    if len(key) not in [16, 24, 32]:
+        raise ValueError("Session key must be 16, 24, or 32 bytes long.")
+
+    encrypted_message_hex = request.encrypted_message
+    try:
+        ciphertext = binascii.unhexlify(encrypted_message_hex)
+    except binascii.Error:
+        raise HTTPException(status_code=400, detail="Invalid hexadecimal input.")
+
+    cipher = AES.new(key, AES.MODE_ECB)
+
+    try:
+        decrypted_data = unpad(cipher.decrypt(ciphertext), AES.block_size)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail="Invalid padding or decryption error.")
+
+    decrypted_text = decrypted_data.decode('utf-8')
+
+    # Output for debugging
+    print(f"Encrypted data (hex): {encrypted_message_hex}")
+    print(f"Decrypted data: {decrypted_text}")
+
+    Message = decrypted_text
+
+    # Return decrypted text
+    return {
+        "Message Recieved"
+    }
+
+@app.get("/Message")
+def get_message():
+    global Message
+    if Message is None:
+        raise HTTPException(status_code=404, detail="No message has been decrypted yet.")
+    
+    return {"Message": Message}

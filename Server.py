@@ -33,11 +33,6 @@ class PublicKeyRequest(BaseModel):
     id: int  
     public_key: List[int]
 
-# class temp(BaseModel):
-#     check : Point
-# async def che(user_data : temp):
-#     user_data.check
-
 
 
 @app.post("/serverinfo")
