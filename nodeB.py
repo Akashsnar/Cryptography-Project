@@ -7,9 +7,20 @@ from ecpy.curves import Curve, Point
 from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5174"],  # Specify allowed origins
+    allow_credentials=True,                  # Allow cookies and credentials
+    allow_methods=["*"],                     # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],                     # Allow all headers
+)
 
 # State variables for Node B
 pkb = None
@@ -129,7 +140,10 @@ def partial_key_generate():
         print("ski:", ski)
         print("pki:", pki)
         print("hi:", hi)
-
+        
+        if(hi == None):
+            return {"error": "ID already exists."}
+        
         recalculated_hi = hashlib.sha256(f"{node_id}{pkb}{pki}".encode()).hexdigest()
 
         if recalculated_hi == hi:

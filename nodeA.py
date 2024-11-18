@@ -8,8 +8,20 @@ from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 import requests
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
+# app = FastAPI()
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Specify allowed origins
+    allow_credentials=True,                  # Allow cookies and credentials
+    allow_methods=["*"],                     # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],                     # Allow all headers
+)
+
 
 # State variables for Node A
 pka = None
@@ -66,7 +78,7 @@ class CurvePoints(BaseModel):
 @app.get("/serverinfo")
 def serverinfo():
     global n, master_public_key, Mpk
-
+    print("hellow")
     response = requests.post(f"{server}/serverinfo")
 
     if response.status_code == 200:
@@ -130,6 +142,9 @@ def partial_key_generate():
         print("pki:", pki)
         print("hi:", hi)
 
+        if(hi == None):
+            return {"error": "ID already exists."}
+
         recalculated_hi = hashlib.sha256(f"{node_id}{pka}{pki}".encode()).hexdigest()
 
         if recalculated_hi == hi:
@@ -144,6 +159,10 @@ def partial_key_generate():
         return {"error": "Failed to send public key", "status_code": response.status_code}
 
 
+
+
+
+# A->B
 
 @app.get("/authenticate")
 def authenticate():

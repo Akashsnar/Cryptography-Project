@@ -3,7 +3,7 @@ import axios from "axios";
 
 const Node_A = () => {
   const [response, setResponse] = useState("");
-  const baseURL = "http://127.0.0.1:8001"; // Replace with your FastAPI server's base URL
+  const baseURL = "http://127.0.0.1:8002"; // Replace with your FastAPI server's base URL
   const config = {
     headers: {
       "Access-Control-Allow-Origin": "*",
