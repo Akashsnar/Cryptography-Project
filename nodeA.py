@@ -13,13 +13,11 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import struct
 import binascii
-
 from fastapi.middleware.cors import CORSMiddleware
 
-# app = FastAPI()
+
 app = FastAPI()
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Specify allowed origins
@@ -94,7 +92,8 @@ class EncryptedMessageRequest(BaseModel):
 @app.get("/serverinfo")
 def serverinfo():
     global n, master_public_key, Mpk
-    print("hellow")
+
+
     response = requests.post(f"{server}/serverinfo")
 
     if response.status_code == 200:
@@ -129,8 +128,8 @@ def generatekeys():
     pka = [x, y]
 
     return {
-        "private_key": ska,
-        "pka": pka
+        "Private_key": ska,
+        "Public Key": pka
     }
 
 
@@ -168,6 +167,13 @@ def partial_key_generate():
             pska = ski
             partial_public_key_a = G*pska
             ppka =[partial_public_key_a.x,partial_public_key_a.y]
+            return{
+                "partial Private Key":pska,
+                "Partial Public Kay":ppka,
+                "Given Hash":hi,
+                "Recalculated Hash":recalculated_hi,
+                "Success":"Hash Value Matched"
+            }
 
         else:
             return {"error": "Hash mismatch. Invalid partial key pair."}
@@ -175,10 +181,6 @@ def partial_key_generate():
         return {"error": "Failed to send public key", "status_code": response.status_code}
 
 
-
-
-
-# A->B
 
 @app.get("/authenticate")
 def authenticate():
@@ -284,7 +286,7 @@ def verify_keys(data : CurvePoints):
 @app.get("/GenerateSessionKey")
 def GenerateSessionKey():
 
-    global SSK1, SSK2, SSKAB
+    global DeltaB, Pkb, PPkb, nodeid
     global SSK1,SSK2,SSKAB
 
     #SSK1
@@ -346,7 +348,11 @@ def encryption(request: MessageRequest):
         "encrypted_message":encrypted_hex
     })
 
-    return {"result": "Message Delievered"}
+    return {
+        "result": "Message Delievered",
+        "Encrypted Message":encrypted_hex,
+        "Original Message":data
+    }
 
 @app.post("/Decryption")
 def decryption(request: EncryptedMessageRequest):
@@ -384,7 +390,7 @@ def decryption(request: EncryptedMessageRequest):
         "Message Recieved"
     }
 
-@app.get("/Message")
+@app.get("/Message") 
 def get_message():
     global Message
     if Message is None:

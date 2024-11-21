@@ -18,8 +18,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5174"],  # Specify allowed origins
@@ -90,9 +88,11 @@ class EncryptedMessageRequest(BaseModel):
     encrypted_message: str
 
 
+
 @app.get("/serverinfo")
 def serverinfo():
     global n, master_public_key, Mpk
+
 
     response = requests.post(f"{server}/serverinfo")
 
@@ -128,8 +128,8 @@ def generatekeys():
     pkb = [x, y]
 
     return {
-        "private_key": skb,
-        "pkb": pkb
+        "Private_key": skb,
+        "Public Key": pkb
     }
 
 
@@ -167,6 +167,13 @@ def partial_key_generate():
             pskb = ski
             partial_public_key_b = G*pskb
             ppkb = [partial_public_key_b.x,partial_public_key_b.y]
+            return{
+                "partial Private Key":pskb,
+                "Partial Public Kay":ppkb,
+                "Given Hash":hi,
+                "Recalculated Hash":recalculated_hi,
+                "Success":"Hash Value Matched"
+            }
 
         else:
             return {"error": "Hash mismatch. Invalid partial key pair."}
@@ -341,7 +348,11 @@ def encryption(request: MessageRequest):
         "encrypted_message":encrypted_hex
     })
 
-    return {"result": "Message Delievered"}
+    return {
+        "result": "Message Delievered",
+        "Encrypted Message":encrypted_hex,
+        "Original Message":data
+    }
 
 @app.post("/Decryption")
 def decryption(request: EncryptedMessageRequest):

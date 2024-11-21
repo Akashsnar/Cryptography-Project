@@ -126,7 +126,7 @@ const Node_A = () => {
   const [message, setMessage] = useState("");
   const [newMessage, setNewMessage] = useState("");
 
-  const baseURL = "http://127.0.0.1:8001"; // Replace with your FastAPI server's base URL
+  const baseURL = "http://127.0.0.1:8002"; // Replace with your FastAPI server's base URL
 
   const handleButtonClick = async (endpoint) => {
     try {
@@ -166,8 +166,9 @@ const Node_A = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Cryptic Message using ECL-AKA</h1>
-      <h3>Node A</h3>
+      <h1>ECL-AKA</h1>
+      <h3>Node B</h3>
+
       <div style={{ marginBottom: "20px" }}>
         <button
           onClick={() => handleButtonClick("/serverinfo")}
