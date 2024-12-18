@@ -8,8 +8,8 @@ Akash Singh Narvariya - S20210010012
 
 Running Instructions :
 
-
-#1) Making a Python Virtual Environment :
+1) Making a Python Virtual Environment :
+   
 Run the following command to make Python venv :
 
         python -m venv venv
@@ -20,7 +20,8 @@ Command to Activzte venv (Must activate before running any command) :
         .\venv\Scripts\Activate
 
 
-#2) Installing Dependencies in Venv
+2) Installing Dependencies in Venv
+   
 Run the following command to install dependencies :
 
 
@@ -36,7 +37,8 @@ Run the following command to install Frontend Dependencies :
     npm install
 
 
-#3) Running Servers 
+3) Running Servers
+   
 You Need to Open 5 Terminals/ Servers to run the project
 
 Terminal 1 (Server/KGC)
@@ -70,7 +72,8 @@ Terminal 5 (Node B Frontend)
     npm run dev
 
 
-#4) Test The Project :
+4) Test The Project :
+   
 
     -Fetch Server Info
     -Generate keys
